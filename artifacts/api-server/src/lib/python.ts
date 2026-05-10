@@ -3,9 +3,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { logger } from "./logger.js";
 
+// import.meta.url resolves to the *compiled bundle* (dist/index.mjs) in both
+// dev (build-then-start) and production, so __dirname is always
+// /…/artifacts/api-server/dist — giving stable relative paths in both modes.
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SCRIPTS_DIR = path.resolve(__dirname, "../../src/ml");
-const PYTHON_BIN = path.resolve(process.cwd(), ".pythonlibs/bin/python");
+const SCRIPTS_DIR = path.resolve(__dirname, "../src/ml");
+const PYTHON_BIN = path.resolve(__dirname, "../../../.pythonlibs/bin/python");
 
 export function runPythonScript<T>(
   scriptName: string,
