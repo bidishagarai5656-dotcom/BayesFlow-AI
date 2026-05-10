@@ -3,6 +3,7 @@
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -66,30 +67,32 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-:root {
-  --background: 230 25% 10%;
+/* ── DARK MODE (default) ─────────────────────────────────────────── */
+:root,
+.dark {
+  --background: 230 25% 8%;
   --foreground: 210 40% 98%;
-  --card: 230 25% 12%;
+  --card: 230 25% 11%;
   --card-foreground: 210 40% 98%;
-  --card-border: 230 25% 18%;
-  --popover: 230 25% 12%;
+  --card-border: 230 25% 17%;
+  --popover: 230 25% 11%;
   --popover-foreground: 210 40% 98%;
-  --popover-border: 230 25% 18%;
+  --popover-border: 230 25% 17%;
   --primary: 190 90% 50%;
-  --primary-foreground: 230 25% 10%;
-  --secondary: 230 25% 18%;
+  --primary-foreground: 230 25% 8%;
+  --secondary: 230 25% 17%;
   --secondary-foreground: 210 40% 98%;
-  --muted: 230 25% 18%;
+  --muted: 230 25% 17%;
   --muted-foreground: 215 20% 65%;
   --accent: 280 80% 60%;
   --accent-foreground: 210 40% 98%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
-  --border: 230 25% 18%;
-  --input: 230 25% 18%;
+  --border: 230 25% 17%;
+  --input: 230 25% 17%;
   --ring: 190 90% 50%;
   --radius: 0.5rem;
-  
+
   --chart-1: 190 90% 50%;
   --chart-2: 280 80% 60%;
   --chart-3: 150 80% 50%;
@@ -100,42 +103,62 @@
   --app-font-serif: Georgia, serif;
   --app-font-mono: 'Space Mono', 'Menlo', monospace;
 
-  /* Automatic computation of border around primary / danger buttons */
-  --opaque-button-border-intensity: -8; /* In terms of percentages */
-
-  /* Backgrounds applied on top of other backgrounds when hovered/active */
+  --opaque-button-border-intensity: -8;
   --elevate-1: rgba(255,255,255, .05);
   --elevate-2: rgba(255,255,255, .1);
+
+  --sidebar: 230 25% 10%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-border: 230 25% 17%;
+  --sidebar-primary: 190 90% 50%;
+  --sidebar-primary-foreground: 230 25% 8%;
+  --sidebar-accent: 230 25% 17%;
+  --sidebar-accent-foreground: 210 40% 98%;
+  --sidebar-ring: 190 90% 50%;
 }
 
-.dark {
-  --background: 230 25% 5%;
-  --foreground: 210 40% 98%;
-  --card: 230 25% 8%;
-  --card-foreground: 210 40% 98%;
-  --card-border: 230 25% 15%;
-  --popover: 230 25% 8%;
-  --popover-foreground: 210 40% 98%;
-  --popover-border: 230 25% 15%;
-  --primary: 190 90% 50%;
-  --primary-foreground: 230 25% 5%;
-  --secondary: 230 25% 15%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 230 25% 15%;
-  --muted-foreground: 215 20% 65%;
-  --accent: 280 80% 60%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 84% 60%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 230 25% 15%;
-  --input: 230 25% 15%;
-  --ring: 190 90% 50%;
-  
-  --chart-1: 190 90% 50%;
-  --chart-2: 280 80% 60%;
-  --chart-3: 150 80% 50%;
-  --chart-4: 30 80% 60%;
-  --chart-5: 330 80% 60%;
+/* ── LIGHT MODE ──────────────────────────────────────────────────── */
+.light {
+  --background: 210 30% 97%;
+  --foreground: 230 25% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 230 25% 12%;
+  --card-border: 210 20% 88%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 230 25% 12%;
+  --popover-border: 210 20% 88%;
+  --primary: 190 85% 38%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 20% 93%;
+  --secondary-foreground: 230 25% 20%;
+  --muted: 210 20% 93%;
+  --muted-foreground: 215 15% 45%;
+  --accent: 280 60% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 20% 86%;
+  --input: 210 20% 90%;
+  --ring: 190 85% 38%;
+
+  --chart-1: 190 85% 38%;
+  --chart-2: 280 60% 50%;
+  --chart-3: 150 60% 38%;
+  --chart-4: 30 70% 48%;
+  --chart-5: 330 60% 48%;
+
+  --opaque-button-border-intensity: -12;
+  --elevate-1: rgba(0,0,0, .04);
+  --elevate-2: rgba(0,0,0, .08);
+
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 230 25% 12%;
+  --sidebar-border: 210 20% 88%;
+  --sidebar-primary: 190 85% 38%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 210 20% 93%;
+  --sidebar-accent-foreground: 230 25% 20%;
+  --sidebar-ring: 190 85% 38%;
 }
 
 @layer base {
@@ -147,14 +170,48 @@
   }
 }
 
+/* ── Utility classes ─────────────────────────────────────────────── */
 .glass-panel {
-  @apply bg-card/40 backdrop-blur-md border border-card-border shadow-[0_0_15px_rgba(0,0,0,0.5)];
+  @apply bg-card/60 backdrop-blur-md border border-card-border shadow-[0_0_15px_rgba(0,0,0,0.3)];
+}
+
+.light .glass-panel {
+  @apply bg-card/90 shadow-[0_2px_12px_rgba(0,0,0,0.08)];
 }
 
 .glow-text {
   text-shadow: 0 0 10px hsl(var(--primary) / 0.5);
 }
 
+.light .glow-text {
+  text-shadow: none;
+}
+
 .glow-box {
   box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
+}
+
+/* ── Custom scrollbar ────────────────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.4);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.7);
+}
+
+/* ── Stage completion pulse ──────────────────────────────────────── */
+@keyframes stage-complete-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--primary) / 0.5); }
+  50% { box-shadow: 0 0 0 6px hsl(var(--primary) / 0); }
+}
+.stage-complete-pulse {
+  animation: stage-complete-pulse 2s ease infinite;
 }
