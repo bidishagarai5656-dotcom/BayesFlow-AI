@@ -3,20 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: BayesFlow AI - Naive Bayes ML Workflow Platform
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: datasets
+    description: Dataset management
+  - name: sessions
+    description: ML workflow sessions
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +27,768 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /ml/datasets/builtin:
+    get:
+      operationId: listBuiltinDatasets
+      tags: [datasets]
+      summary: List available built-in datasets
+      responses:
+        "200":
+          description: List of built-in datasets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BuiltinDataset"
+
+  /ml/datasets/upload:
+    post:
+      operationId: uploadDataset
+      tags: [datasets]
+      summary: Upload a CSV dataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadDatasetInput"
+      responses:
+        "200":
+          description: Dataset loaded and session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetSession"
+        "400":
+          description: Invalid input
+
+  /ml/datasets/load-builtin:
+    post:
+      operationId: loadBuiltinDataset
+      tags: [datasets]
+      summary: Load a built-in dataset and create session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoadBuiltinInput"
+      responses:
+        "200":
+          description: Dataset loaded and session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetSession"
+        "400":
+          description: Invalid dataset name
+
+  /ml/sessions/{sessionId}/explore:
+    get:
+      operationId: exploreDataset
+      tags: [sessions]
+      summary: Explore dataset statistics, distributions, correlations
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Dataset exploration results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetExploration"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/preprocess:
+    post:
+      operationId: preprocessDataset
+      tags: [sessions]
+      summary: Apply preprocessing steps to dataset
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PreprocessingOptions"
+      responses:
+        "200":
+          description: Preprocessing result with before/after info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PreprocessingResult"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/configure:
+    post:
+      operationId: configureFeatures
+      tags: [sessions]
+      summary: Set target column, features, and train-test split
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeatureConfig"
+      responses:
+        "200":
+          description: Configuration applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeatureConfigResult"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/model-recommendation:
+    get:
+      operationId: getModelRecommendation
+      tags: [sessions]
+      summary: Get recommended Naive Bayes variant for this dataset
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Model recommendation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelRecommendation"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/train:
+    post:
+      operationId: trainModel
+      tags: [sessions]
+      summary: Train the selected Naive Bayes model
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TrainModelInput"
+      responses:
+        "200":
+          description: Training results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrainingResult"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/predict:
+    post:
+      operationId: makePrediction
+      tags: [sessions]
+      summary: Make a prediction with the trained model
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PredictionInput"
+      responses:
+        "200":
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PredictionResult"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/evaluate:
+    get:
+      operationId: evaluateModel
+      tags: [sessions]
+      summary: Get full model evaluation metrics
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Evaluation metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EvaluationResult"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/history:
+    get:
+      operationId: getPredictionHistory
+      tags: [sessions]
+      summary: Get prediction history for this session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Prediction history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PredictionRecord"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/analytics:
+    get:
+      operationId: getSessionAnalytics
+      tags: [sessions]
+      summary: Get analytics summary for prediction history
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Analytics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyticsSummary"
+        "404":
+          description: Session not found
+
+  /ml/sessions/{sessionId}/export:
+    get:
+      operationId: exportReport
+      tags: [sessions]
+      summary: Export a prediction report for the session
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Report data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportReport"
+        "404":
+          description: Session not found
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    BuiltinDataset:
+      type: object
+      required: [name, displayName, description, rows, columns, targetColumn]
+      properties:
+        name:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        rows:
+          type: integer
+        columns:
+          type: integer
+        targetColumn:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    UploadDatasetInput:
+      type: object
+      required: [csvContent, filename]
+      properties:
+        csvContent:
+          type: string
+          description: Base64 encoded CSV content
+        filename:
+          type: string
+
+    LoadBuiltinInput:
+      type: object
+      required: [datasetName]
+      properties:
+        datasetName:
+          type: string
+          description: Name of built-in dataset (iris, spam, student, heart)
+
+    DatasetSession:
+      type: object
+      required: [sessionId, datasetName, rows, columns, columnNames, columnTypes, preview]
+      properties:
+        sessionId:
+          type: string
+        datasetName:
+          type: string
+        rows:
+          type: integer
+        columns:
+          type: integer
+        columnNames:
+          type: array
+          items:
+            type: string
+        columnTypes:
+          type: object
+          additionalProperties:
+            type: string
+        preview:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+
+    DatasetExploration:
+      type: object
+      required: [sessionId, rowCount, columnCount, missingValues, columnStats, classCounts, correlationMatrix, histograms]
+      properties:
+        sessionId:
+          type: string
+        rowCount:
+          type: integer
+        columnCount:
+          type: integer
+        missingValues:
+          type: object
+          additionalProperties:
+            type: integer
+        columnStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/ColumnStat"
+        classCounts:
+          type: object
+          additionalProperties:
+            type: integer
+        correlationMatrix:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        histograms:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistogramData"
+
+    ColumnStat:
+      type: object
+      required: [name, dtype, nonNull, unique]
+      properties:
+        name:
+          type: string
+        dtype:
+          type: string
+        nonNull:
+          type: integer
+        unique:
+          type: integer
+        mean:
+          type: ["number", "null"]
+        std:
+          type: ["number", "null"]
+        min:
+          type: ["number", "null"]
+        max:
+          type: ["number", "null"]
+        median:
+          type: ["number", "null"]
+
+    HistogramData:
+      type: object
+      required: [column, bins]
+      properties:
+        column:
+          type: string
+        bins:
+          type: array
+          items:
+            type: object
+            required: [range, count]
+            properties:
+              range:
+                type: string
+              count:
+                type: integer
+
+    PreprocessingOptions:
+      type: object
+      properties:
+        handleMissing:
+          type: string
+          enum: [none, drop_rows, fill_mean, fill_median, fill_mode]
+        encodeCategorical:
+          type: boolean
+        removeDuplicates:
+          type: boolean
+        featureScaling:
+          type: string
+          enum: [none, standard, minmax, robust]
+
+    PreprocessingResult:
+      type: object
+      required: [sessionId, logs, beforeStats, afterStats, rowsBefore, rowsAfter, columnsBefore, columnsAfter]
+      properties:
+        sessionId:
+          type: string
+        logs:
+          type: array
+          items:
+            type: string
+        beforeStats:
+          type: object
+          additionalProperties: {}
+        afterStats:
+          type: object
+          additionalProperties: {}
+        rowsBefore:
+          type: integer
+        rowsAfter:
+          type: integer
+        columnsBefore:
+          type: integer
+        columnsAfter:
+          type: integer
+
+    FeatureConfig:
+      type: object
+      required: [targetColumn, featureColumns, testSize]
+      properties:
+        targetColumn:
+          type: string
+        featureColumns:
+          type: array
+          items:
+            type: string
+        testSize:
+          type: number
+          minimum: 0.1
+          maximum: 0.5
+
+    FeatureConfigResult:
+      type: object
+      required: [sessionId, targetColumn, featureColumns, trainSize, testSize, trainRows, testRows, classes]
+      properties:
+        sessionId:
+          type: string
+        targetColumn:
+          type: string
+        featureColumns:
+          type: array
+          items:
+            type: string
+        trainSize:
+          type: number
+        testSize:
+          type: number
+        trainRows:
+          type: integer
+        testRows:
+          type: integer
+        classes:
+          type: array
+          items:
+            type: string
+
+    ModelRecommendation:
+      type: object
+      required: [recommended, reason, models]
+      properties:
+        recommended:
+          type: string
+          enum: [gaussian, multinomial, bernoulli]
+        reason:
+          type: string
+        models:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModelInfo"
+
+    ModelInfo:
+      type: object
+      required: [type, displayName, description, suitableFor, pros, cons]
+      properties:
+        type:
+          type: string
+        displayName:
+          type: string
+        description:
+          type: string
+        suitableFor:
+          type: string
+        pros:
+          type: array
+          items:
+            type: string
+        cons:
+          type: array
+          items:
+            type: string
+
+    TrainModelInput:
+      type: object
+      required: [modelType]
+      properties:
+        modelType:
+          type: string
+          enum: [gaussian, multinomial, bernoulli]
+
+    TrainingResult:
+      type: object
+      required: [sessionId, modelType, accuracy, trainingTime, classProbabilities, featureImportance, logs, trainAccuracy, testAccuracy]
+      properties:
+        sessionId:
+          type: string
+        modelType:
+          type: string
+        accuracy:
+          type: number
+        trainAccuracy:
+          type: number
+        testAccuracy:
+          type: number
+        trainingTime:
+          type: number
+        classProbabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClassProbability"
+        featureImportance:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeatureImportance"
+        logs:
+          type: array
+          items:
+            type: string
+
+    ClassProbability:
+      type: object
+      required: [className, probability]
+      properties:
+        className:
+          type: string
+        probability:
+          type: number
+
+    FeatureImportance:
+      type: object
+      required: [feature, importance]
+      properties:
+        feature:
+          type: string
+        importance:
+          type: number
+
+    PredictionInput:
+      type: object
+      required: [features]
+      properties:
+        features:
+          type: object
+          additionalProperties: {}
+
+    PredictionResult:
+      type: object
+      required: [sessionId, predictedClass, confidence, classProbabilities, explanation]
+      properties:
+        sessionId:
+          type: string
+        predictedClass:
+          type: string
+        confidence:
+          type: number
+        classProbabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClassProbability"
+        explanation:
+          type: array
+          items:
+            type: string
+
+    EvaluationResult:
+      type: object
+      required: [sessionId, accuracy, precision, recall, f1Score, confusionMatrix, rocData, classReport]
+      properties:
+        sessionId:
+          type: string
+        accuracy:
+          type: number
+        precision:
+          type: number
+        recall:
+          type: number
+        f1Score:
+          type: number
+        confusionMatrix:
+          type: array
+          items:
+            type: array
+            items:
+              type: integer
+        rocData:
+          type: array
+          items:
+            $ref: "#/components/schemas/RocPoint"
+        classReport:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClassMetrics"
+        labels:
+          type: array
+          items:
+            type: string
+
+    RocPoint:
+      type: object
+      required: [fpr, tpr]
+      properties:
+        fpr:
+          type: number
+        tpr:
+          type: number
+        label:
+          type: ["string", "null"]
+
+    ClassMetrics:
+      type: object
+      required: [className, precision, recall, f1Score, support]
+      properties:
+        className:
+          type: string
+        precision:
+          type: number
+        recall:
+          type: number
+        f1Score:
+          type: number
+        support:
+          type: integer
+
+    PredictionRecord:
+      type: object
+      required: [id, sessionId, predictedClass, confidence, timestamp]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        predictedClass:
+          type: string
+        confidence:
+          type: number
+        inputFeatures:
+          type: object
+          additionalProperties: {}
+        timestamp:
+          type: string
+
+    AnalyticsSummary:
+      type: object
+      required: [totalPredictions, avgConfidence, classCounts, confidenceTrend, topClass]
+      properties:
+        totalPredictions:
+          type: integer
+        avgConfidence:
+          type: number
+        classCounts:
+          type: object
+          additionalProperties:
+            type: integer
+        confidenceTrend:
+          type: array
+          items:
+            $ref: "#/components/schemas/ConfidenceTrendPoint"
+        topClass:
+          type: string
+
+    ConfidenceTrendPoint:
+      type: object
+      required: [index, confidence, predictedClass]
+      properties:
+        index:
+          type: integer
+        confidence:
+          type: number
+        predictedClass:
+          type: string
+
+    ExportReport:
+      type: object
+      required: [sessionId, datasetName, modelType, accuracy, totalPredictions, generatedAt, summary]
+      properties:
+        sessionId:
+          type: string
+        datasetName:
+          type: string
+        modelType:
+          type: string
+        accuracy:
+          type: number
+        totalPredictions:
+          type: integer
+        generatedAt:
+          type: string
+        summary:
+          type: string
+        predictions:
+          type: array
+          items:
+            $ref: "#/components/schemas/PredictionRecord"
