@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { useLocation, useParams } from "wouter";
 import { StageLayout } from "@/components/layout/StageLayout";
 import { TheoryPanel } from "@/components/shared/TheoryPanel";
+import { seedSessionProgress } from "@/hooks/useSessionProgress";
 import {
   useListBuiltinDatasets,
   useLoadBuiltinDataset,
@@ -21,11 +22,17 @@ export default function Stage1() {
   const loadBuiltinMutation = useLoadBuiltinDataset();
   const uploadMutation = useUploadDataset();
 
+  /** Navigate to stage 2 under the new session, seeding progress so stage 2 is unlocked. */
+  function goToStage2(newSessionId: string) {
+    seedSessionProgress(newSessionId, 2);
+    setLocation(`/session/${newSessionId}/stage/2`);
+  }
+
   const handleNext = async () => {
     if (!selectedDataset) return;
     try {
       const res = await loadBuiltinMutation.mutateAsync({ data: { datasetName: selectedDataset } });
-      setLocation(`/session/${res.sessionId}/stage/2`);
+      goToStage2(res.sessionId);
     } catch (err: any) {
       toast({ title: "Failed to load dataset", description: err.message || "An error occurred", variant: "destructive" });
     }
@@ -40,7 +47,7 @@ export default function Stage1() {
         const text = event.target?.result as string;
         const base64 = btoa(text);
         const res = await uploadMutation.mutateAsync({ data: { filename: file.name, csvContent: base64 } });
-        setLocation(`/session/${res.sessionId}/stage/2`);
+        goToStage2(res.sessionId);
       } catch (err: any) {
         toast({ title: "Upload failed", description: err.message || "Could not upload file", variant: "destructive" });
       }

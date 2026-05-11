@@ -1,8 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { Check, ChevronRight, Sun, Moon, Home } from "lucide-react";
+import { Check, ChevronRight, Sun, Moon, Home, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { GuidanceAssistant } from "@/components/shared/GuidanceAssistant";
+import { useSessionProgress } from "@/hooks/useSessionProgress";
 
 interface StageLayoutProps {
   children: React.ReactNode;
@@ -11,20 +12,21 @@ interface StageLayoutProps {
   title: string;
   description: string;
   nextDisabled?: boolean;
+  /** If provided, called instead of default navigation. Responsible for its own unlock logic. */
   onNext?: () => void;
   nextLabel?: string;
 }
 
 const STAGES = [
-  { short: "Data", full: "Dataset Selection" },
-  { short: "Explore", full: "Exploration" },
-  { short: "Prep", full: "Preprocessing" },
+  { short: "Data",     full: "Dataset Selection" },
+  { short: "Explore",  full: "Exploration" },
+  { short: "Prep",     full: "Preprocessing" },
   { short: "Features", full: "Feature Selection" },
-  { short: "Model", full: "Model Selection" },
-  { short: "Train", full: "Training" },
-  { short: "Predict", full: "Prediction" },
-  { short: "Eval", full: "Evaluation" },
-  { short: "History", full: "Analytics" },
+  { short: "Model",    full: "Model Selection" },
+  { short: "Train",    full: "Training" },
+  { short: "Predict",  full: "Prediction" },
+  { short: "Eval",     full: "Evaluation" },
+  { short: "History",  full: "Analytics" },
 ];
 
 export function StageLayout({
@@ -39,11 +41,15 @@ export function StageLayout({
 }: StageLayoutProps) {
   const [, setLocation] = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { isUnlocked, isCompleted, unlockNext } = useSessionProgress(sessionId);
 
   const handleNext = () => {
     if (onNext) {
+      // Stage-1 path: it seeds its own progress after getting the new sessionId
       onNext();
     } else {
+      // All other stages: unlock the next stage then navigate
+      unlockNext(currentStage);
       setLocation(`/session/${sessionId}/stage/${currentStage + 1}`);
     }
   };
@@ -65,9 +71,13 @@ export function StageLayout({
       {/* ── Header ── */}
       <header className="sticky top-0 z-40 w-full border-b border-border bg-background/80 backdrop-blur-md mt-0.5">
         <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-4">
+
           {/* Left: Logo + session */}
           <div className="flex items-center gap-2 min-w-0">
-            <Link href="/" className="flex items-center gap-1.5 font-bold text-base tracking-tighter text-primary glow-text hover:opacity-80 transition-opacity flex-shrink-0">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 font-bold text-base tracking-tighter text-primary glow-text hover:opacity-80 transition-opacity flex-shrink-0"
+            >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">BAYESFLOW AI</span>
             </Link>
@@ -81,27 +91,46 @@ export function StageLayout({
           <div className="hidden lg:flex items-center gap-0.5">
             {STAGES.map((stage, index) => {
               const stageNum = index + 1;
-              const isPast = stageNum < currentStage;
-              const isCurrent = stageNum === currentStage;
+              const isCurrent   = stageNum === currentStage;
+              const completed   = isCompleted(stageNum);
+              const unlocked    = isUnlocked(stageNum);
+              const locked      = !unlocked;
 
               return (
                 <div key={stage.short} className="flex items-center">
-                  <Link
-                    href={`/session/${sessionId}/stage/${stageNum}`}
-                    title={stage.full}
-                    className={`flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-mono font-bold transition-all duration-300 ${
-                      isCurrent
-                        ? "bg-primary text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.5)] stage-complete-pulse"
-                        : isPast
-                        ? "bg-primary/20 text-primary hover:bg-primary/30 border border-primary/40"
-                        : "bg-muted text-muted-foreground opacity-40 pointer-events-none"
-                    }`}
-                  >
-                    {isPast ? <Check className="w-3 h-3" /> : stageNum}
-                  </Link>
+                  {locked ? (
+                    /* ── Locked pill (not clickable) ── */
+                    <div
+                      title={`${stage.full} — complete earlier stages to unlock`}
+                      className="flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-mono font-bold
+                                 bg-muted/40 text-muted-foreground/40 border border-border/40 cursor-not-allowed select-none"
+                    >
+                      <Lock className="w-3 h-3" />
+                    </div>
+                  ) : (
+                    /* ── Unlocked / current / completed pill ── */
+                    <Link
+                      href={`/session/${sessionId}/stage/${stageNum}`}
+                      title={stage.full}
+                      className={`flex items-center justify-center w-7 h-7 rounded-full text-[10px] font-mono font-bold
+                                  transition-all duration-300 ${
+                        isCurrent
+                          ? "bg-primary text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.5)] stage-complete-pulse"
+                          : completed
+                          ? "bg-primary/20 text-primary hover:bg-primary/30 border border-primary/40"
+                          : "bg-muted/70 text-muted-foreground hover:bg-muted border border-border"
+                      }`}
+                    >
+                      {completed ? <Check className="w-3 h-3" /> : stageNum}
+                    </Link>
+                  )}
+
+                  {/* Connector line */}
                   {index < STAGES.length - 1 && (
                     <div
-                      className={`w-5 h-px transition-colors duration-500 ${isPast ? "bg-primary/50" : "bg-border"}`}
+                      className={`w-5 h-px transition-colors duration-500 ${
+                        completed ? "bg-primary/50" : "bg-border"
+                      }`}
                     />
                   )}
                 </div>
@@ -132,8 +161,24 @@ export function StageLayout({
         <div className="lg:hidden flex items-center gap-1 px-4 pb-2 overflow-x-auto no-scrollbar">
           {STAGES.map((stage, index) => {
             const stageNum = index + 1;
-            const isPast = stageNum < currentStage;
             const isCurrent = stageNum === currentStage;
+            const completed  = isCompleted(stageNum);
+            const unlocked   = isUnlocked(stageNum);
+            const locked     = !unlocked;
+
+            if (locked) {
+              return (
+                <div
+                  key={stage.short}
+                  className="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide
+                             bg-muted/40 text-muted-foreground/40 cursor-not-allowed select-none flex items-center gap-1"
+                >
+                  <Lock className="w-2.5 h-2.5" />
+                  {stage.short}
+                </div>
+              );
+            }
+
             return (
               <Link
                 key={stage.short}
@@ -141,12 +186,12 @@ export function StageLayout({
                 className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide transition-all ${
                   isCurrent
                     ? "bg-primary text-primary-foreground"
-                    : isPast
+                    : completed
                     ? "bg-primary/20 text-primary"
-                    : "bg-muted text-muted-foreground opacity-40 pointer-events-none"
+                    : "bg-muted text-muted-foreground"
                 }`}
               >
-                {isPast ? "✓" : stageNum} {stage.short}
+                {completed ? "✓" : stageNum} {stage.short}
               </Link>
             );
           })}
@@ -198,15 +243,33 @@ export function StageLayout({
           </button>
 
           {currentStage < 9 && (
-            <motion.button
-              whileHover={nextDisabled ? {} : { scale: 1.02 }}
-              whileTap={nextDisabled ? {} : { scale: 0.98 }}
-              className="px-8 py-2.5 bg-primary text-primary-foreground rounded-md uppercase tracking-widest text-xs font-bold shadow-[0_0_15px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)] transition-all disabled:opacity-40 disabled:pointer-events-none"
-              onClick={handleNext}
-              disabled={nextDisabled}
-            >
-              {nextLabel} →
-            </motion.button>
+            <div className="flex flex-col items-end gap-1.5">
+              <motion.button
+                whileHover={nextDisabled ? {} : { scale: 1.02 }}
+                whileTap={nextDisabled ? {} : { scale: 0.98 }}
+                className="px-8 py-2.5 bg-primary text-primary-foreground rounded-md uppercase tracking-widest text-xs font-bold
+                           shadow-[0_0_15px_hsl(var(--primary)/0.3)] hover:shadow-[0_0_25px_hsl(var(--primary)/0.5)]
+                           transition-all disabled:opacity-40 disabled:pointer-events-none"
+                onClick={handleNext}
+                disabled={nextDisabled}
+              >
+                {nextLabel} →
+              </motion.button>
+
+              {/* Hint when disabled */}
+              <AnimatePresence>
+                {nextDisabled && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-wider"
+                  >
+                    Complete this stage to continue
+                  </motion.p>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </div>
       </main>
