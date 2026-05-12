@@ -12,7 +12,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
-      "@assets": path.resolve(__dirname, "..", "..", "attached_assets"),
     },
     dedupe: ["react", "react-dom"],
   },
@@ -25,7 +24,9 @@ export default defineConfig({
   },
 
   server: {
-    port: 5173,
+    port: Number(process.env.PORT) || 5173,
     strictPort: true,
+    host: "0.0.0.0",
+    allowedHosts: true,
   },
 });
