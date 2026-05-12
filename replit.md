@@ -54,6 +54,35 @@ An interactive AI-powered Machine Learning laboratory that guides users through 
 8. Model Evaluation — confusion matrix, ROC curve, precision/recall/F1
 9. Prediction History & Analytics — prediction logs, confidence trends, class distributions
 
+## Deployment
+
+Two-part deployment: frontend on Netlify, backend on Render.
+
+### Frontend → Netlify
+- Config: `netlify.toml` at repo root
+- Build command: `pnpm install --frozen-lockfile && pnpm --filter @workspace/bayesflow run build`
+- Publish dir: `artifacts/bayesflow/dist`
+- **Required env var in Netlify dashboard:** `VITE_API_BASE_URL` = your Render backend URL (e.g. `https://bayesflow-api.onrender.com`)
+
+### Backend → Render
+- Config: `render.yaml` at repo root (Render Blueprint — imports both the web service and PostgreSQL DB)
+- Steps:
+  1. Push repo to GitHub
+  2. Go to render.com → New → Blueprint → connect the repo
+  3. Render auto-creates the web service + PostgreSQL database
+  4. After deploy, set `CORS_ORIGIN` env var in Render dashboard = your Netlify site URL (e.g. `https://bayesflow.netlify.app`)
+- Python deps: `artifacts/api-server/requirements.txt`
+- Python binary: configured via `PYTHON_BIN=python3` env var (set in render.yaml)
+- Health check: `GET /api/healthz`
+
+### Environment variable summary
+| Var | Where | Value |
+|-----|-------|-------|
+| `VITE_API_BASE_URL` | Netlify | Your Render service URL |
+| `CORS_ORIGIN` | Render | Your Netlify site URL |
+| `DATABASE_URL` | Render | Auto-wired from Render DB |
+| `PYTHON_BIN` | Render | `python3` (set in render.yaml) |
+
 ## User preferences
 
 _Populate as you build — explicit user instructions worth remembering across sessions._
@@ -61,9 +90,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 ## Gotchas
 
 - Always run `pnpm --filter @workspace/api-spec run codegen` after changing `lib/api-spec/openapi.yaml`
-- Python scripts run from `.pythonlibs/bin/python` (uv venv); system `python3` won't have scikit-learn
+- Python scripts run from `.pythonlibs/bin/python` (uv venv) in Replit; on Render it uses system `python3` (set via `PYTHON_BIN` env var)
 - Session data is stored in `/tmp/bayesflow_<sessionId>/` — ephemeral, lost on server restart
-- ML scripts path is resolved relative to the compiled server location — SCRIPTS_DIR points to `../../src/ml` from `dist/lib/`
+- ML scripts path is resolved relative to the compiled server location — configurable via `SCRIPTS_DIR` env var
+- Render free tier web services spin down after 15 min of inactivity (cold start ~30s)
 
 ## Pointers
 
