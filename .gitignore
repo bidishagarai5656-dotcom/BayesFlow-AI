@@ -1,41 +1,49 @@
-# Dependencies
-node_modules/
-.pnpm-store/
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
-# Build outputs
-dist/
-artifacts/api-server/dist/
-artifacts/bayesflow/dist/
+# compiled output
+dist
+tmp
+out-tsc
+*.tsbuildinfo
+.expo
+.expo-shared
 
-# Environment variables
-.env
-.env.local
-.env.*.local
+# dependencies
+node_modules
 
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-.pythonlibs/
-*.pickle
-*.pkl
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# ML session data (ephemeral, stored in /tmp at runtime)
-/tmp/bayesflow_*/
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
-# Logs
-*.log
-pnpm-debug.log*
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
 
-# OS
+# System Files
 .DS_Store
 Thumbs.db
 
-# Editor
-.vscode/
-.idea/
-*.swp
-*.swo
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
 
-# Drizzle migrations (using push workflow, not migration files)
-drizzle/
+# Replit
+.cache/
+.local/

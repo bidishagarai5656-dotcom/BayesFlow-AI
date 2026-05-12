@@ -1,0 +1,120 @@
+Create a full-stack AI-powered Machine Learning web application called “BayesFlow AI” using React for the frontend and Python Flask for the backend. The project must be completely based on the Naive Bayes algorithm and should work like a guided step-by-step ML workflow platform similar to an interactive Logistic Regression learning system.
+
+The application should not be a simple dashboard. Instead, it must guide users through multiple stages of the Machine Learning process one after another with progress indicators, graphs, analytics, and interactive visualizations.
+
+Main Workflow:
+
+Stage 1 — Dataset Selection
+
+Allow users to:
+Upload their own CSV dataset
+Choose from built-in sample datasets
+Include sample datasets:
+Iris Dataset
+Spam Detection Dataset
+Student Performance Dataset
+Heart Disease Dataset
+
+Stage 2 — Dataset Exploration
+
+Show:
+Dataset preview table
+Number of rows and columns
+Missing values
+Data types
+Correlation heatmap
+Histograms
+Box plots
+Class distribution charts
+
+Stage 3 — Data Preprocessing
+
+Add preprocessing options:
+Handle missing values
+Encode categorical values
+Remove duplicates
+Feature scaling
+Show preprocessing logs and before-vs-after visualizations
+
+Stage 4 — Feature Selection & Train-Test Split
+
+Allow users to:
+Select target column
+Select input features
+Adjust train-test split using slider
+
+Stage 5 — Naive Bayes Model Selection
+
+Provide:
+Gaussian Naive Bayes
+Multinomial Naive Bayes
+Bernoulli Naive Bayes
+Automatically recommend the best variant based on dataset type
+
+Stage 6 — Model Training
+
+Train the model interactively
+Show:
+Training animation
+Accuracy score
+Model summary
+Real-time logs
+Probability distribution graphs
+
+Stage 7 — Prediction System
+
+Dynamically generate input fields based on dataset columns
+Allow users to enter values and predict outcomes
+Show:
+Predicted class
+Confidence percentage
+Probability bars for each class
+Explain why the prediction was made
+
+Stage 8 — Model Evaluation
+
+Display:
+Confusion matrix heatmap
+Accuracy
+Precision
+Recall
+F1-score
+ROC curve
+Comparison charts
+
+Stage 9 — Prediction History & Analytics
+
+Save prediction history
+Show:
+Prediction logs
+Confidence trends
+Most predicted classes
+Analytics dashboard
+
+Frontend Requirements:
+
+React.js
+Tailwind CSS
+Framer Motion animations
+Recharts or Chart.js
+Multi-step workflow UI
+Dark/light mode toggle
+Responsive modern design
+
+Backend Requirements:
+
+Python Flask
+Scikit-learn
+Pandas
+NumPy
+
+Additional Features:
+
+Download prediction reports
+Interactive charts and graphs
+Smooth transitions between stages
+Real-time API communication between frontend and backend
+Beginner-friendly interface
+Fully deployable on Replit
+
+The UI should look futuristic, interactive, and educational, making users feel like they are working inside a professional AI-powered Machine Learning laboratory focused entirely on Naive Bayes classification and probability-based prediction systems.
